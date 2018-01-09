@@ -11,14 +11,16 @@ SLEEP = 60 # seconds between server queries
 import time
 import os
 import valve.source.a2s
-from datetime import datetime
+from datetime import datetime, timedelta
+from chat import Chat
+
 try:
     import gi
     gi.require_version('Notify', '0.7')
     from gi.repository import Notify
 except ImportError:
     print("Notify missing. Will print in terminal.")
-
+    sleep(5)
 def notification_send(summary, body=''):
     try:
         Notify.init("Rusts.py")
@@ -95,9 +97,15 @@ def player_list(last_players):
 if __name__ == "__main__":
     try:
         last_players = None
+        chat = Chat()
         while True:
-            os.system('clear')
+            print("\033[2J\033[;H") # ANSI Clear screen, and reset cursor
             last_players = player_list(last_players)
+
+            # Get chat
+            print("\nChat:")
+            for message in chat.poll()[-10:]: # Last ten
+                print("{} <{}> {}".format(message[0][0], message[1], message[2]))
             time.sleep(SLEEP)
     except KeyboardInterrupt:
         print('Bye!')
