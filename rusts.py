@@ -7,6 +7,7 @@ Should be compatible with any source server/game"""
 SERVER = "163.172.17.175"
 PORT = 30616
 SLEEP = 60 # seconds between server queries
+OWN_NICK = "blambi"
 
 import time
 import os
@@ -21,6 +22,7 @@ try:
 except ImportError:
     print("Notify missing. Will print in terminal.")
     sleep(5)
+
 def notification_send(summary, body=''):
     try:
         Notify.init("Rusts.py")
@@ -72,6 +74,13 @@ def player_list(last_players):
     print("Rust Version {} ({}ms)".format(version, ping))
     print(line_sep)
 
+    # Check if self is online if not skip notifications
+    player_names = [player["name"] for player in players]
+    if OWN_NICK in player_names:
+        self_online = True
+    else:
+        self_online = False
+
     for player in players:
         player_name = player["name"]
         player_minutes = int(player["duration"]) / 60
@@ -79,13 +88,15 @@ def player_list(last_players):
         print("%12s:\t %d hr %02d min" % (player_name[:12], player_hours, player_minutes))
         if last_players is not None:
             if player_name not in last_players:
-                notification_send(player_name + " has logged in")
+                if self_online:
+                    notification_send("Rust GamingOnLinux", player_name + " has logged in")
         current_players[player_name] = player
 
     if last_players is not None:
         for player in last_players.values():
             if player['name'] not in current_players:
-                notification_send(player['name'] + ' has logged off')
+                if self_online:
+                    notification_send("Rust GamingOnLinux", player['name'] + ' has logged off')
 
     print(line_sep)
     print("%d players / %d max" % (num_players, max_players))
